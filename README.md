@@ -11,6 +11,7 @@ The paper is [Meta-Harness: End-to-End Optimization of Model Harnesses](https://
 - Two paper reference experiments under `reference_examples/`:
   - [`reference_examples/text_classification/`](reference_examples/text_classification/README.md): memory-system search for text classification.
   - [`reference_examples/terminal_bench_2/`](reference_examples/terminal_bench_2/README.md): scaffold evolution for Terminal-Bench 2.0.
+- The optimized Terminal-Bench 2 harness from the paper lives in the separate artifact repo: [stanford-iris-lab/meta-harness-tbench2-artifact](https://github.com/stanford-iris-lab/meta-harness-tbench2-artifact).
 
 ## Quick Start
 
@@ -36,6 +37,8 @@ Use the subdir READMEs for setup details, expected runtime, and additional comma
 
 Start by pointing your coding assistant to [`ONBOARDING.md`](ONBOARDING.md) and having a conversation with it.
 This should produce a `domain_spec.md` file with concrete details on how to proceed with implementing Meta-Harness for your domain.
+
+The shipped examples currently assume Claude Code as the proposer agent. To use a different proposer agent, adapt the example `claude_wrapper.py` scripts in [`reference_examples/text_classification/claude_wrapper.py`](reference_examples/text_classification/claude_wrapper.py) or [`reference_examples/terminal_bench_2/claude_wrapper.py`](reference_examples/terminal_bench_2/claude_wrapper.py). The main requirement is a wrapper that cleanly logs proposer interactions.
 
 ## Release Note
 
