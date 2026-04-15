@@ -62,6 +62,26 @@ By the end of the onboarding, you must collect or force decisions on all of the 
 - What directory structure should we use to store prior candidates?
 - (optional but recommended) Would implementing a CLI for the proposer to access experience data be helpful? If so, what commands and functionality would be most useful?
 
+## Practical Implementation Tips
+
+1. Write a good skill.
+   The skill text is an important first-class part of the method. The skill should encode what kinds of harness changes are worth trying, the anti-patterns to avoid, and the required output format. For general skill-writing guidance, start with [Agent Skills](https://agentskills.io/home). Repo-local worked examples: [`reference_examples/text_classification/.claude/skills/meta-harness/SKILL.md`](reference_examples/text_classification/.claude/skills/meta-harness/SKILL.md) and [`reference_examples/terminal_bench_2/.claude/skills/meta-harness-terminal-bench-2/SKILL.md`](reference_examples/terminal_bench_2/.claude/skills/meta-harness-terminal-bench-2/SKILL.md).
+
+2. Start with a baseline harness and a search set that's hard for it.
+   If the baseline is already near-saturated on the search set, the proposer will not get useful signal. Pick a baseline that is real but beatable, and a search set where failure modes are still visible. Worked examples: the text classification setup in [`reference_examples/text_classification/README.md`](reference_examples/text_classification/README.md) and the TB2 hard-split setup in [`reference_examples/terminal_bench_2/README.md`](reference_examples/terminal_bench_2/README.md) and [`reference_examples/terminal_bench_2/meta_harness.py`](reference_examples/terminal_bench_2/meta_harness.py).
+
+3. Log everything in a format that's easy to navigate.
+   Store traces, candidate summaries, frontier state, and per-run outputs in stable, boring paths. A lot of proposer quality comes from whether prior attempts are easy to inspect. Worked examples: the text classification run layout in [`reference_examples/text_classification/benchmark.py`](reference_examples/text_classification/benchmark.py) and the per-run state files in [`reference_examples/text_classification/meta_harness.py`](reference_examples/text_classification/meta_harness.py) and [`reference_examples/terminal_bench_2/meta_harness.py`](reference_examples/terminal_bench_2/meta_harness.py).
+
+4. Make logs queryable through a small CLI.
+   The proposer should not have to manually open dozens of files to answer simple questions like "what is on the frontier now?" or "which candidates dominated accuracy-context tradeoffs?" Worked examples: [`reference_examples/text_classification/benchmark.py`](reference_examples/text_classification/benchmark.py), which exposes `--results`, `--frontier`, and structured result loading, and the corresponding usage note in [`reference_examples/text_classification/README.md`](reference_examples/text_classification/README.md).
+
+5. Do lightweight validation before expensive benchmarks.
+   Catch obvious failures before spending real benchmark budget. Import checks, smoke tasks, cheap slices, and shape checks pay for themselves immediately. Worked examples: candidate validation in [`reference_examples/text_classification/meta_harness.py`](reference_examples/text_classification/meta_harness.py) and import-plus-smoke validation in [`reference_examples/terminal_bench_2/meta_harness.py`](reference_examples/terminal_bench_2/meta_harness.py).
+
+6. Automate evaluation outside the proposer.
+   The proposer should analyze history, implement candidates, and write down what to evaluate next. The outer loop should own benchmarking, persistence, and bookkeeping. Worked examples: [`reference_examples/text_classification/meta_harness.py`](reference_examples/text_classification/meta_harness.py) and [`reference_examples/terminal_bench_2/meta_harness.py`](reference_examples/terminal_bench_2/meta_harness.py), together with the explicit "You do NOT run benchmarks" instructions in the two skills above.
+
 ## How To Run This Conversation
 
 Follow this process.
