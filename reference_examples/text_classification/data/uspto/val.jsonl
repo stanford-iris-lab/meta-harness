@@ -1,0 +1,30 @@
+{"question": "Context: The reaction type is C-C bond formation.\nInput: Cc1c(C(=O)Nc2ccc(-c3nc(Br)cnc3N)cc2)c(=O)n(-c2ccccc2)n1C\nAnswer: ", "target": "Cc1c(C(=O)Nc2ccc(B3OC(C)(C)C(C)(C)O3)cc2)c(=O)n(-c2ccccc2)n1C.Nc1ncc(Br)nc1Br"}
+{"question": "Context: The reaction type is Functional group addition (FGA).\nInput: COc1ccc(Br)c(CBr)c1\nAnswer: ", "target": "COc1ccc(Br)c(C)c1.O=C1CCC(=O)N1Br"}
+{"question": "Context: The reaction type is Functional group interconversion (FGI).\nInput: CC(C)(C)OC(=O)N1CCN(c2cc(CN=[N+]=[N-])cc(-c3ccnc(NC4CCCCC4)c3)n2)CC1\nAnswer: ", "target": "CC(C)(C)OC(=O)N1CCN(c2cc(CBr)cc(-c3ccnc(NC4CCCCC4)c3)n2)CC1.[N-]=[N+]=[N-]"}
+{"question": "Context: The reaction type is Protections.\nInput: CC(C)(C)OC(=O)NCc1cccnc1\nAnswer: ", "target": "CC(C)(C)OC(=O)OC(=O)OC(C)(C)C.NCc1cccnc1"}
+{"question": "Context: The reaction type is Deprotections.\nInput: O=C(O)c1c[nH]c2c(F)cc(I)cc2c1=O\nAnswer: ", "target": "CCOC(=O)c1c[nH]c2c(F)cc(I)cc2c1=O"}
+{"question": "Context: The reaction type is Oxidations.\nInput: O=C(CCc1ccccc1)Nc1cc(F)ccc1C(=O)C(F)(F)F\nAnswer: ", "target": "O=C(CCc1ccccc1)Nc1cc(F)ccc1C(O)C(F)(F)F"}
+{"question": "Context: The reaction type is Protections.\nInput: CC(C)(C)OC(=O)N[C@H]1CCCCN(C(=O)OCc2ccccc2)C1\nAnswer: ", "target": "CC(C)(C)OC(=O)OC(=O)OC(C)(C)C.N[C@H]1CCCCN(C(=O)OCc2ccccc2)C1"}
+{"question": "Context: The reaction type is C-C bond formation.\nInput: COC(=O)c1cc(-c2ccc(Cl)cc2)ccc1N\nAnswer: ", "target": "COC(=O)c1cc(Br)ccc1N.OB(O)c1ccc(Cl)cc1"}
+{"question": "Context: The reaction type is Reductions.\nInput: COc1ccc(C)n2nc(CCc3nc(-c4ccccc4)nn3CCO)nc12\nAnswer: ", "target": "CCOC(=O)Cn1nc(-c2ccccc2)nc1CCc1nc2c(OC)ccc(C)n2n1"}
+{"question": "Context: The reaction type is Functional group interconversion (FGI).\nInput: CC(C)(C)OC(=O)N1C[C@H](O)C[C@H]1C(N)=O\nAnswer: ", "target": "CC(C)(C)OC(=O)N1C[C@H](O)C[C@H]1C(=O)O.N"}
+{"question": "Context: The reaction type is Reductions.\nInput: C/C(=C\\c1ccccc1)c1ccc2c(c1)C(C)(C)C(O)C2(C)C\nAnswer: ", "target": "C/C(=C\\c1ccccc1)c1ccc2c(c1)C(C)(C)C(=O)C2(C)C"}
+{"question": "Context: The reaction type is Heterocycle formation.\nInput: N#CC1CCc2[nH]c3ccccc3c2C1\nAnswer: ", "target": "N#CC1CCC(=O)CC1.NNc1ccccc1"}
+{"question": "Context: The reaction type is Functional group interconversion (FGI).\nInput: CC1(C)OB(c2cccc(C(=O)NC3CC3)c2)OC1(C)C\nAnswer: ", "target": "CC1(C)OB(B2OC(C)(C)C(C)(C)O2)OC1(C)C.O=C(NC1CC1)c1cccc(Br)c1"}
+{"question": "Context: The reaction type is Acylation and related processes.\nInput: N#Cc1c(NC(=S)NC(=O)c2ccccc2)sc2c1CCCC2\nAnswer: ", "target": "N#Cc1c(N)sc2c1CCCC2.O=C(N=C=S)c1ccccc1"}
+{"question": "Context: The reaction type is Oxidations.\nInput: CN(CC=O)C(c1ccccc1)(c1ccccc1)c1ccccc1\nAnswer: ", "target": "CN(CCO)C(c1ccccc1)(c1ccccc1)c1ccccc1"}
+{"question": "Context: The reaction type is Acylation and related processes.\nInput: CC(C)(C(=O)NCC1CC1)c1ccc(S(=O)(=O)/C=C/C#N)cc1\nAnswer: ", "target": "CC(C)(C(=O)O)c1ccc(S(=O)(=O)/C=C/C#N)cc1.NCC1CC1"}
+{"question": "Context: The reaction type is Heteroatom alkylation and arylation.\nInput: Oc1cc(O)c(C=NNc2c(Cl)cc(C(F)(F)F)cc2Cl)c(O)c1\nAnswer: ", "target": "NNc1c(Cl)cc(C(F)(F)F)cc1Cl.O=Cc1c(O)cc(O)cc1O"}
+{"question": "Context: The reaction type is Heterocycle formation.\nInput: Cc1nc2ccc(-c3ccc([C@H](C)N4CC[C@](CC(C)(C)O)(c5ccccc5)OC4=O)cc3)cc2[nH]1\nAnswer: ", "target": "CC(=O)O.C[C@@H](c1ccc(-c2ccc(N)c(N)c2)cc1)N1CC[C@](CC(C)(C)O)(c2ccccc2)OC1=O"}
+{"question": "Context: The reaction type is C-C bond formation.\nInput: CC(C)(C)OC(=O)Nc1nc(-c2ccc(S(C)(=O)=O)cc2)ns1\nAnswer: ", "target": "CC(C)(C)OC(=O)Nc1nc(Br)ns1.CS(=O)(=O)c1ccc(B(O)O)cc1"}
+{"question": "Context: The reaction type is Functional group addition (FGA).\nInput: CCOC(=O)c1c(OC)cc(-c2cnc(OC)c(OC)c2)nc1CBr\nAnswer: ", "target": "CCOC(=O)c1c(OC)cc(-c2cnc(OC)c(OC)c2)nc1C.O=C1CCC(=O)N1Br"}
+{"question": "Context: The reaction type is Oxidations.\nInput: NS(=O)(=O)c1ccccc1S(=O)Cc1ccccc1\nAnswer: ", "target": "NS(=O)(=O)c1ccccc1SCc1ccccc1.OO"}
+{"question": "Context: The reaction type is Protections.\nInput: COC(=O)CC1(CC(=O)OC)OCCO1\nAnswer: ", "target": "COC(=O)CC(=O)CC(=O)OC.OCCO"}
+{"question": "Context: The reaction type is Deprotections.\nInput: COc1ccc2c(/C=C/C(N)=O)cc(=O)n(CC=O)c2c1\nAnswer: ", "target": "COc1ccc2c(/C=C/C(N)=O)cc(=O)n(CC3OCCO3)c2c1"}
+{"question": "Context: The reaction type is Heteroatom alkylation and arylation.\nInput: O=C(c1ccccc1F)N1C(=O)c2ccccc2S1(=O)=O\nAnswer: ", "target": "O=C(Cl)c1ccccc1F.O=C1NS(=O)(=O)c2ccccc21"}
+{"question": "Context: The reaction type is Functional group addition (FGA).\nInput: CCOC(=O)c1cc(OC(F)(F)C(F)Cl)ccc1CBr\nAnswer: ", "target": "CCOC(=O)c1cc(OC(F)(F)C(F)Cl)ccc1C.O=C1CCC(=O)N1Br"}
+{"question": "Context: The reaction type is Reductions.\nInput: OCCCc1c[nH]c2ccccc12\nAnswer: ", "target": "O=C(O)CCc1c[nH]c2ccccc12"}
+{"question": "Context: The reaction type is Acylation and related processes.\nInput: COc1cccc(-c2cc(NC(N)=O)c(C(N)=O)s2)c1\nAnswer: ", "target": "COc1cccc(-c2cc(N)c(C(N)=O)s2)c1.C[Si](C)(C)N=C=O"}
+{"question": "Context: The reaction type is Heterocycle formation.\nInput: Cc1cn(-c2ccc(Nc3nc4c(s3)CCCC4c3ccccc3)cc2Cl)cn1\nAnswer: ", "target": "Cc1cn(-c2ccc(NC(N)=S)cc2Cl)cn1.O=C1C(Br)CCCC1c1ccccc1"}
+{"question": "Context: The reaction type is Heteroatom alkylation and arylation.\nInput: CCOC(Cn1cncn1)(c1ccc(Oc2ccc(Cl)cc2)cc1Cl)C(C)C\nAnswer: ", "target": "CC(C)C(O)(Cn1cncn1)c1ccc(Oc2ccc(Cl)cc2)cc1Cl.CCI"}
+{"question": "Context: The reaction type is Deprotections.\nInput: CCCCC1(CC)CN(c2ccccc2)c2cc(OCC(=O)O)ccc2S(=O)(=O)C1\nAnswer: ", "target": "CCCCC1(CC)CN(c2ccccc2)c2cc(OCC(=O)OCC)ccc2S(=O)(=O)C1"}

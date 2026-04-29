@@ -210,4 +210,8 @@ agent_notes/
 experience/
 .empty_plugins/
 **/data/
+!reference_examples/text_classification/data/
+!reference_examples/text_classification/data/**
+reference_examples/text_classification/data/**/__pycache__/
+reference_examples/text_classification/data/**/*.pyc
 reference_examples/terminal_bench_2/offline_experience/
