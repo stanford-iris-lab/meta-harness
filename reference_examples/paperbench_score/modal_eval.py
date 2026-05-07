@@ -126,6 +126,7 @@ pb = grade.get("paperbench_result", {})
 judge_output = pb.get("judge_output") or {}
 tree = judge_output.get("graded_task_tree") or {}
 totals = defaultdict(lambda: [0.0, 0.0])
+leaves = []
 
 def walk(n):
     if not n:
@@ -133,8 +134,17 @@ def walk(n):
     children = n.get("sub_tasks") or []
     if not children and "score" in n and "weight" in n:
         cat = n.get("task_category") or "Uncategorized"
-        totals[cat][0] += float(n["score"]) * float(n["weight"])
-        totals[cat][1] += float(n["weight"])
+        score = float(n["score"])
+        weight = float(n["weight"])
+        totals[cat][0] += score * weight
+        totals[cat][1] += weight
+        leaves.append({
+            "category": cat,
+            "score": score,
+            "weight": weight,
+            "description": n.get("requirements") or n.get("description") or n.get("name") or n.get("task") or "",
+            "explanation": n.get("explanation") or "",
+        })
     for child in children:
         walk(child)
 
@@ -152,6 +162,10 @@ result = {
     "reproduction_metadata_present": bool(pb.get("reproduction_metadata")),
     "judge_output_present": bool(pb.get("judge_output")),
     "categories": categories,
+    "lowest_scoring_leaves": sorted(
+        leaves,
+        key=lambda x: (float(x.get("score") or 0.0), -float(x.get("weight") or 0.0)),
+    )[:20],
 }
 print("\n=== PaperBench score summary ===")
 print(f"Overall: {result['score']:.4f}")
