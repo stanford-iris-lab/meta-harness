@@ -7,6 +7,7 @@ import signal
 import subprocess
 import sys
 import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime
 from pathlib import Path
 
@@ -154,14 +155,14 @@ def append_summary(iteration: int, candidate: dict, result: dict) -> None:
         f.write(json.dumps(row, sort_keys=True) + "\n")
 
 
-def propose(iteration: int, timeout: int) -> list[dict]:
+def propose(iteration: int, timeout: int, batch_size: int) -> list[dict]:
     if PENDING_EVAL.exists():
         PENDING_EVAL.unlink()
     frontier = FRONTIER_VAL.read_text() if FRONTIER_VAL.exists() else "{}"
     summary = EVOLUTION_SUMMARY.read_text() if EVOLUTION_SUMMARY.exists() else ""
     prompt = f"""Run PaperBench-score Meta-Harness iteration {iteration}.
 
-Goal: propose 1 candidate agent file that improves the real PaperBench overall score on `{PAPER_ID}`.
+Goal: propose {batch_size} diverse candidate agent files that improve the real PaperBench overall score on `{PAPER_ID}`.
 
 Candidate interface:
 - Write a Python file under `agents/`.
@@ -190,7 +191,7 @@ Feedback from prior runs:
 {summary[-8000:]}
 </evolution_summary>
 
-Write pending eval JSON to `{PENDING_EVAL}` with:
+Write pending eval JSON to `{PENDING_EVAL}` with exactly {batch_size} entries:
 {{"candidates": [{{"name": "<file_stem>", "hypothesis": "...", "axis": "..."}}]}}
 """
     result = claude_wrapper.run(
@@ -207,7 +208,36 @@ Write pending eval JSON to `{PENDING_EVAL}` with:
     result.show()
     if result.exit_code != 0 or not PENDING_EVAL.exists():
         return []
-    return json.loads(PENDING_EVAL.read_text()).get("candidates", [])
+    return json.loads(PENDING_EVAL.read_text()).get("candidates", [])[:batch_size]
+
+
+def evaluate_batch(iteration: int, candidates: list[dict], args: argparse.Namespace, run_name: str) -> list[tuple[dict, dict]]:
+    results: list[tuple[dict, dict]] = []
+    with ThreadPoolExecutor(max_workers=max(1, args.parallelism)) as executor:
+        futures = {
+            executor.submit(
+                evaluate_candidate,
+                candidate["name"],
+                run_name,
+                args.agent_time_limit,
+                args.reproduction_timeout,
+                args.gpu,
+            ): candidate
+            for candidate in candidates
+        }
+        for future in as_completed(futures):
+            candidate = futures[future]
+            try:
+                result = future.result()
+            except Exception as exc:
+                result = {"agent": candidate["name"], "score": 0.0, "error": repr(exc)}
+            print(f"Finished {candidate['name']}: score={float(result.get('score') or 0.0):.4f}", flush=True)
+            if result.get("feedback"):
+                print(result["feedback"], flush=True)
+            results.append((candidate, result))
+    batch_path = LOGS_DIR / f"batch_results_iter{iteration}.json"
+    batch_path.write_text(json.dumps([{"candidate": c, "result": r} for c, r in results], indent=2, sort_keys=True))
+    return results
 
 
 def run(args: argparse.Namespace) -> None:
@@ -236,24 +266,15 @@ def run(args: argparse.Namespace) -> None:
         if _interrupted:
             break
         print(f"\nIteration {iteration}")
-        candidates = propose(iteration, args.propose_timeout)
+        candidates = propose(iteration, args.propose_timeout, args.batch_size)
         valid = [c for c in candidates if validate_candidate(c["name"])]
         if not valid:
             print("No valid candidates.")
             continue
-        for candidate in valid:
-            if _interrupted:
-                break
-            name = candidate["name"]
-            print(f"Evaluating {name}: {candidate.get('hypothesis', '')}")
-            result = evaluate_candidate(
-                name,
-                run_name,
-                args.agent_time_limit,
-                args.reproduction_timeout,
-                args.gpu,
-            )
-            print(result.get("feedback", result))
+        print(f"Evaluating batch of {len(valid)} candidates with parallelism={args.parallelism}")
+        batch_results = evaluate_batch(iteration, valid, args, run_name)
+        print(f"Committing {len(batch_results)} batch results to frontier storage")
+        for candidate, result in batch_results:
             update_frontier(result)
             append_summary(iteration, candidate, result)
 
@@ -265,6 +286,8 @@ def main() -> None:
     parser.add_argument("--fresh", action="store_true")
     parser.add_argument("--skip-baseline", action="store_true")
     parser.add_argument("--propose-timeout", type=int, default=2400)
+    parser.add_argument("--batch-size", type=int, default=10)
+    parser.add_argument("--parallelism", type=int, default=10)
     parser.add_argument("--agent-time-limit", type=int, default=600)
     parser.add_argument("--reproduction-timeout", type=int, default=600)
     parser.add_argument("--gpu", default="A10G")
