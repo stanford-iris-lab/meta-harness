@@ -214,4 +214,7 @@ experience/
 !reference_examples/text_classification/data/**
 reference_examples/text_classification/data/**/__pycache__/
 reference_examples/text_classification/data/**/*.pyc
+# spreadsheet_bench: track the loader/fetch scripts + README, but NOT the xlsx payload
+!reference_examples/spreadsheet_bench/data/
+reference_examples/spreadsheet_bench/data/*/
 reference_examples/terminal_bench_2/offline_experience/

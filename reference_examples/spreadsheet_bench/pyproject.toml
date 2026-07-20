@@ -1,0 +1,20 @@
+[project]
+name = "spreadsheet-bench"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = [
+    "litellm<1.82.7",
+    "openai-harmony",
+    "tenacity>=8",
+    "tqdm",
+    "pyyaml",
+    "openpyxl>=3.1",
+    "pandas",
+    "matplotlib",
+]
+
+[tool.uv]
+package = false
+
+[tool.ruff]
+exclude = ["agents"]

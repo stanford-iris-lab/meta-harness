@@ -1,0 +1,51 @@
+# SpreadsheetBench meta-harness config.
+
+# Inner-loop solver model.
+# QNAIGC / Sufy OpenAI-compatible Chat Completions endpoint.
+# The bearer key is read from the QNAIGC_API_KEY env var (see inner_loop.py),
+# NOT from api_base. Only /v1/chat/completions is supported (no /v1/responses).
+model:
+  name: gpt-oss-120b
+  api_base: https://api.qnaigc.com/v1
+  temperature: null        # null = model default (gpt-oss uses 1.0)
+  # To use OpenRouter instead, set name: openrouter/openai/gpt-oss-120b and api_base: null
+
+# Dataset selection.
+#   source     : which extracted dataset dir under data/ to load. Fetch it first with
+#                `bash data/fetch_data.sh <source>`. Official SpreadsheetBench releases:
+#                  - sample_data_200            (200-instance sample; cheap bring-up)
+#                  - spreadsheetbench_912_v0.1  (full 912-instruction benchmark)
+#                  - spreadsheetbench_verified_400 (cleaned/verified 400 subset)
+#   dev_size   : number of instructions in the dev subset used during the search loop.
+#                THIS IS THE KNOB TO VARY. Override at runtime with env MH_N_TASKS.
+#                dev_size: 0 uses the ENTIRE source.
+#   seed       : deterministic shuffle seed for picking the dev subset.
+dataset:
+  source: spreadsheetbench_912_v0.1
+  dev_size: 8
+  seed: 42
+
+# Agent loop knobs (defaults; candidates may override on their subclass).
+agent:
+  max_turns: 6
+  code_timeout_s: 60
+  preview_rows: 20
+
+# Evaluation backend.
+#   backend    : "value" (openpyxl data_only value compare, no LibreOffice) | "libreoffice" (stub).
+#   metric     : "hard" (OJ all-test-cases-pass) | "soft" (fraction of test cases passing).
+#   numeric_tol: absolute tolerance for numeric cell comparison (values are also round-2 normalized).
+eval:
+  backend: value
+  metric: hard
+  numeric_tol: 1.0e-6
+
+# Benchmark sweep settings.
+benchmark:
+  concurrency: 16
+
+# Protected baseline agents (file stems in agents/; never overwritten by --fresh;
+# always benchmarked in Phase 0).
+baselines:
+  - baseline_react
+  - baseline_single
