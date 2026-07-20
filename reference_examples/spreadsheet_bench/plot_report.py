@@ -79,6 +79,32 @@ def build(run_dir: Path) -> dict:
     }
 
 
+def _test_per_task(run_dir: Path, agent: str) -> dict:
+    out = {}
+    for f in (run_dir / "test" / agent).glob("task_*.json"):
+        try:
+            r = json.loads(f.read_text())
+        except (json.JSONDecodeError, OSError):
+            continue
+        out[r["task_id"]] = 1 if r.get("passed") else 0
+    return out
+
+
+def _bootstrap_ci(vals: list[int], iters: int = 20000, seed: int = 1):
+    """95% percentile bootstrap CI for a mean of 0/1 values."""
+    import random
+
+    if not vals:
+        return 0.0, 0.0
+    rng = random.Random(seed)
+    n = len(vals)
+    means = []
+    for _ in range(iters):
+        means.append(sum(vals[rng.randrange(n)] for _ in range(n)) / n)
+    means.sort()
+    return means[int(0.025 * iters)], means[int(0.975 * iters) - 1]
+
+
 def plot(data: dict, run_dir: Path, run_name: str) -> Path:
     curve = data["curve"]
     xs = [c["iter"] for c in curve]
@@ -86,7 +112,12 @@ def plot(data: dict, run_dir: Path, run_name: str) -> Path:
     cand_x = [c["iter"] for c in curve[1:]]
     cand_y = [c["best_candidate"] for c in curve[1:]]
 
-    fig, ax = plt.subplots(figsize=(8, 5))
+    has_test = bool(data.get("test"))
+    if has_test:
+        fig, (ax, ax2) = plt.subplots(1, 2, figsize=(13, 5),
+                                      gridspec_kw={"width_ratios": [1.35, 1]})
+    else:
+        fig, ax = plt.subplots(figsize=(8, 5))
     ax.plot(xs, [y * 100 for y in ys], "-o", color="#2563eb", lw=2, label="frontier best val (running max)")
     if cand_x:
         ax.scatter(cand_x, [y * 100 for y in cand_y], color="#f59e0b", zorder=5, label="iteration candidate val")
@@ -99,6 +130,36 @@ def plot(data: dict, run_dir: Path, run_name: str) -> Path:
     ax.set_xticks(xs)
     ax.grid(True, alpha=0.3)
     ax.legend(fontsize=8, loc="best")
+
+    if has_test:
+        # val (tiny n) vs held-out test (n=200) with bootstrap CIs — the key comparison.
+        val_by_agent = dict(data["baseline_val"])
+        for r in data["rows"]:
+            val_by_agent[r["agent"]] = r.get("pass_rate", 0.0)
+        names = list(data["test"].keys())
+        xpos = range(len(names))
+        val_v = [100 * val_by_agent.get(nm, 0.0) for nm in names]
+        test_v = [100 * data["test"][nm]["pass_rate"] for nm in names]
+        errs = [[], []]
+        for nm in names:
+            per = _test_per_task(run_dir, nm)
+            lo, hi = _bootstrap_ci(list(per.values()))
+            t = data["test"][nm]["pass_rate"]
+            errs[0].append(max(0.0, 100 * (t - lo)))
+            errs[1].append(max(0.0, 100 * (hi - t)))
+        w = 0.36
+        ax2.bar([x - w / 2 for x in xpos], val_v, w, label="val (n=8)",
+                color="#f59e0b", alpha=0.85)
+        ax2.bar([x + w / 2 for x in xpos], test_v, w, yerr=errs, capsize=4,
+                label="test (n=200, 95% CI)", color="#2563eb", alpha=0.9)
+        ax2.set_xticks(list(xpos))
+        ax2.set_xticklabels([nm.replace("baseline_", "") for nm in names],
+                            rotation=15, fontsize=9)
+        ax2.set_ylabel("pass_rate %")
+        ax2.set_title("val vs held-out test")
+        ax2.grid(True, axis="y", alpha=0.3)
+        ax2.legend(fontsize=8)
+
     fig.tight_layout()
     out = run_dir / "curve.png"
     fig.savefig(out, dpi=130)
