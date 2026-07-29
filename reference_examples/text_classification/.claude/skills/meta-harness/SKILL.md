@@ -72,10 +72,11 @@ For each candidate:
 
 For each of the 3 candidates:
 
-1. Copy a top-performing base system to `agents/<name>.py`, then make targeted modifications. This copy-then-edit approach ensures correct imports and proven patterns.
-2. Implement the new mechanism according to your hypothesis.
-3. **Self-critique (mandatory):** After implementing, re-read the file and check: does this system introduce a genuinely NEW mechanism, or is it just a parameter variant? If the logic in `predict()` and `learn_from_batch()` is identical to the base except for numbers, REWRITE with a truly novel mechanism.
-4. Validate: `uv run python -c "from text_classification.agents.<name> import *; print('OK')"`
+1. **Pick a globally unique `name`.** Before writing, check `agents/` and `evolution_summary.jsonl`: the `<snake_case_name>` must not match any existing candidate file or any past `system` entry. If the mechanism name would collide (e.g. two iterations both landing on `prototype_anchor_consensus_memory`), append an iteration suffix like `_iter{N}` — reusing a name silently overwrites the earlier `agents/<name>.py` and makes the outer loop score three "different" candidates against the same file.
+2. Copy a top-performing base system to `agents/<name>.py`, then make targeted modifications. This copy-then-edit approach ensures correct imports and proven patterns.
+3. Implement the new mechanism according to your hypothesis.
+4. **Self-critique (mandatory):** After implementing, re-read the file and check: does this system introduce a genuinely NEW mechanism, or is it just a parameter variant? If the logic in `predict()` and `learn_from_batch()` is identical to the base except for numbers, REWRITE with a truly novel mechanism.
+5. Validate: `uv run python -c "from text_classification.agents.<name> import *; print('OK')"`
 
 Do not edit `config.yaml` just to register candidates. The benchmark auto-discovers files in `agents/`.
 

@@ -189,6 +189,56 @@ def propose_claude(task_prompt, iteration, timeout=2400):
     return PENDING_EVAL.exists()
 
 
+def _snapshot_agent_mtimes():
+    """Return {name: mtime} for every *.py in AGENTS_DIR (baselines included).
+
+    Used to detect same-name collisions across iterations/runs: any candidate
+    whose file mtime does not advance during a propose step was NOT written by
+    this iteration and would silently reuse (or overwrite) a pre-existing file.
+    """
+    snapshot = {}
+    if AGENTS_DIR.exists():
+        for f in AGENTS_DIR.glob("*.py"):
+            try:
+                snapshot[f.stem] = f.stat().st_mtime
+            except OSError:
+                pass
+    return snapshot
+
+
+def dedupe_candidates(candidates, pre_snapshot):
+    """Drop same-name duplicates and pre-existing (non-refreshed) collisions.
+
+    - Within one iteration: keep the first occurrence of each name, drop later
+      duplicates (proposer sometimes emits the same snake_case twice; the on-disk
+      file would be overwritten and evaluation results would collapse to one).
+    - Across iterations/runs: if `agents/<name>.py` already exists and its mtime
+      did not advance during the propose step, the proposer did NOT write a new
+      file for it -- treat as a naming collision and reject.
+    """
+    kept, dropped = [], []
+    seen = set()
+    post_snapshot = _snapshot_agent_mtimes()
+    for c in candidates:
+        name = c.get("name")
+        if not name:
+            dropped.append((c, "missing name"))
+            continue
+        if name in seen:
+            dropped.append((c, "duplicate name within iteration"))
+            continue
+        pre_mtime = pre_snapshot.get(name)
+        post_mtime = post_snapshot.get(name)
+        if pre_mtime is not None and (post_mtime is None or post_mtime <= pre_mtime):
+            dropped.append((c, f"name collides with existing agents/{name}.py"))
+            continue
+        seen.add(name)
+        kept.append(c)
+    for c, reason in dropped:
+        print(f"    {_yellow('SKIP')} {c.get('name', '<no-name>')}: {reason}")
+    return kept
+
+
 def validate_candidates(candidates):
     """Import-check each candidate. Returns list of valid candidates."""
     valid = []
@@ -467,6 +517,10 @@ def run_evolve(args):
         if PENDING_EVAL.exists():
             PENDING_EVAL.unlink()
 
+        # Snapshot agent file mtimes so we can detect same-name collisions
+        # (proposer must write a fresh file for every candidate name).
+        pre_snapshot = _snapshot_agent_mtimes()
+
         # Propose
         propose_start = time.time()
         print(f"  {_ts()} {_cyan('proposing')} new candidates...", flush=True)
@@ -486,6 +540,13 @@ def run_evolve(args):
         for ci, c in enumerate(candidates):
             hyp = c.get("hypothesis", "")
             print(f"    {ci + 1}. {_bold(c['name'])}: {hyp[:80]}")
+
+        # Reject in-iteration duplicates and same-name collisions with existing
+        # on-disk agents (files whose mtime did not advance during propose).
+        candidates = dedupe_candidates(candidates, pre_snapshot)
+        if not candidates:
+            print(f"  {_red('0 unique')} candidates after dedupe, skipping iteration")
+            continue
 
         # Validate
         print(f"  {_ts()} {_cyan('validating')} {len(candidates)} candidate(s)...")
