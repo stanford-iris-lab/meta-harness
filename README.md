@@ -39,6 +39,7 @@ We may feature your work here.
 - [AutoRef](https://arxiv.org/abs/2609.35530) ([code](https://github.com/KuOnoda/AutoRef)): Applies harness optimization to multi-reference image generation.
 - [MetaBench-Harness](https://arxiv.org/abs/2609.33411): Applies harness search over accumulated execution history to benchmark-generation pipelines.
 - [Mixture of Self-Improving Branches](https://arxiv.org/abs/2609.37834): Extends Meta-Harness with adaptive search branches and a router that selects a harness for each input.
+- [TTHE](https://arxiv.org/abs/2607.08124) ([code](https://github.com/junnie00/TTHE)): Builds on Meta-Harness to evolve harnesses at test time using unlabeled execution traces, adapting to shifting task distributions.
 
 ## Quick Start
 
