@@ -223,17 +223,43 @@ def command_for(
     ]
 
 
-def child_result(job_dir: Path) -> ChildResult:
-    result_files = list(job_dir.glob("*/result.json"))
-    if len(result_files) != 1:
+def child_result(job_dir: Path, expected_attempts: int = 1) -> ChildResult:
+    """Average all expected attempts, counting missing or malformed ones as zero."""
+    if expected_attempts < 1:
+        raise ValueError("expected_attempts must be positive")
+    result_files = sorted(job_dir.glob("*/result.json"))
+    if not result_files:
         return ChildResult(0.0, "missing Harbor result", str(job_dir))
-    try:
-        result = json.loads(result_files[0].read_text())
-        verifier = result.get("verifier_result") or {}
-        reward = float(verifier["rewards"]["reward"])
-        return ChildResult(reward, json.dumps(verifier, sort_keys=True), str(job_dir))
-    except (KeyError, TypeError, ValueError, json.JSONDecodeError):
-        return ChildResult(0.0, "malformed Harbor result", str(job_dir))
+    if len(result_files) > expected_attempts:
+        return ChildResult(
+            0.0,
+            f"found {len(result_files)} Harbor results; expected {expected_attempts}",
+            str(job_dir),
+        )
+    rewards: list[float] = []
+    summaries: list[str] = []
+    for result_file in result_files:
+        try:
+            result = json.loads(result_file.read_text())
+            verifier = result["verifier_result"] or {}
+            reward = float(verifier["rewards"]["reward"])
+            summary = json.dumps(verifier, sort_keys=True)
+        except (KeyError, TypeError, ValueError, json.JSONDecodeError):
+            reward = 0.0
+            summary = "malformed Harbor result"
+        rewards.append(reward)
+        summaries.append(summary)
+    if expected_attempts == 1:
+        summary = summaries[0]
+    else:
+        summary = json.dumps(
+            {
+                "attempts": summaries,
+                "missing_attempts": expected_attempts - len(result_files),
+            },
+            sort_keys=True,
+        )
+    return ChildResult(sum(rewards) / expected_attempts, summary, str(job_dir))
 
 
 def run_child(
@@ -258,7 +284,7 @@ def run_child(
         )
     if completed.returncode != 0:
         return ChildResult(0.0, f"Harbor exited {completed.returncode}", str(job_dir))
-    return child_result(job_dir)
+    return child_result(job_dir, expected_attempts=suite.n_attempts)
 
 
 def evaluate_source(
