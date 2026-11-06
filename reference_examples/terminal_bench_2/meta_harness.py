@@ -394,11 +394,15 @@ def update_frontier(candidates_results):
 
 
 def update_evolution_summary(
-    iteration, candidates, results, propose_time=None, bench_time=None, metrics=None
+    iteration,
+    candidates,
+    results,
+    previous_best,
+    propose_time=None,
+    bench_time=None,
+    metrics=None,
 ):
-    """Append one JSONL row per candidate."""
-    frontier = json.loads(FRONTIER_VAL.read_text()) if FRONTIER_VAL.exists() else {}
-    best_avg = frontier.get("_best", {}).get("avg_pass_rate", 0)
+    """Record deltas against the frontier score at the start of the iteration."""
     metrics = metrics or {}
 
     with open(EVOLUTION_SUMMARY, "a") as f:
@@ -413,8 +417,8 @@ def update_evolution_summary(
                 "per_task": {k: round(v, 3) for k, v in per_task.items()},
                 "hypothesis": c.get("hypothesis", ""),
                 "changes": c.get("changes", ""),
-                "delta": round(avg - best_avg, 3) if best_avg else None,
-                "outcome": f"{avg:.1%} ({avg - best_avg:+.1%})"
+                "delta": round(avg - previous_best, 3) if previous_best else None,
+                "outcome": f"{avg:.1%} ({avg - previous_best:+.1%})"
                 if avg > 0
                 else "failed",
             }
@@ -742,7 +746,11 @@ def run_evolve(args):
                 f"  {_red('0 valid')} out of {len(candidates)} candidates, skipping iteration"
             )
             update_evolution_summary(
-                iteration, candidates, {}, propose_time=propose_time
+                iteration,
+                candidates,
+                {},
+                previous_best=best_avg,
+                propose_time=propose_time,
             )
             continue
         print(f"  {_green(f'{len(valid)} valid')} out of {len(candidates)} candidates")
@@ -837,6 +845,7 @@ def run_evolve(args):
             iteration,
             valid,
             results,
+            previous_best=best_avg,
             propose_time=propose_time,
             bench_time=bench_time,
             metrics=all_metrics,
