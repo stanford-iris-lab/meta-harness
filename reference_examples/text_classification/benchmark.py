@@ -6,6 +6,7 @@ import json
 import os
 import random
 import re
+import signal
 from collections import defaultdict
 from pathlib import Path
 
@@ -73,6 +74,18 @@ def _print_failure(desc: str, log_path: Path) -> None:
         print(f"  {line[:120]}")
 
 
+async def _kill_worker(proc: asyncio.subprocess.Process) -> None:
+    try:
+        if os.name == "posix":
+            # The command may wrap the actual worker (for example, uv run).
+            os.killpg(proc.pid, signal.SIGKILL)
+        else:
+            proc.kill()
+    except ProcessLookupError:
+        pass  # The process may have exited while cleanup was starting.
+    await proc.wait()
+
+
 async def _run_with_retries(
     cmd: list[str],
     log_path: Path,
@@ -92,13 +105,16 @@ async def _run_with_retries(
                 *cmd,
                 stdout=f,
                 stderr=asyncio.subprocess.STDOUT,
+                start_new_session=(os.name == "posix"),
             )
             try:
                 code = await asyncio.wait_for(proc.wait(), timeout=timeout)
             except asyncio.TimeoutError:
-                proc.kill()
-                await proc.wait()
+                await _kill_worker(proc)
                 code = 124
+            except asyncio.CancelledError:
+                await _kill_worker(proc)
+                raise
             f.write(f"\nexit={code}\n")
 
         if code == 0:
