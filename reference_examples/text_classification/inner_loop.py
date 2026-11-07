@@ -498,7 +498,11 @@ def load_memory_system(path: str, llm) -> MemorySystem:
     module = importlib.import_module(f".{module_path}", package="text_classification")
 
     for _, obj in inspect.getmembers(module, inspect.isclass):
-        if issubclass(obj, MemorySystem) and obj is not MemorySystem:
+        if (
+            issubclass(obj, MemorySystem)
+            and obj is not MemorySystem
+            and obj.__module__ == module.__name__
+        ):
             return obj(llm=llm)
 
     raise ValueError(f"No MemorySystem subclass found in {path}")
