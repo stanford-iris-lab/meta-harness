@@ -540,7 +540,6 @@ def render_task_prompt(iteration, n_trials):
         f"All logs and results for this run are under `{LOGS_DIR}/`.\n"
         f"- `{LOGS_DIR / 'evolution_summary.jsonl'}` — past results\n"
         f"- `{LOGS_DIR / 'frontier_val.json'}` — frontier\n"
-        f"- `{LOGS_DIR / 'reports'}/` — post-eval reports\n"
         f"- Write pending_eval.json to: `{PENDING_EVAL}`"
     )
 

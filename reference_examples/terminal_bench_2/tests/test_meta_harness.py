@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import re
 import subprocess
 import tempfile
 import unittest
@@ -17,6 +18,21 @@ from harbor.models.agent.context import AgentContext
 
 ROOT = Path(__file__).resolve().parents[1]
 RUN_EVAL = ROOT / "scripts" / "run_eval.sh"
+
+
+class TaskPromptTests(unittest.TestCase):
+    def test_prompt_lists_only_paths_the_loop_uses(self) -> None:
+        prompt = meta_harness.render_task_prompt(1, 2)
+        listed = {
+            path.rstrip("/") for path in re.findall(r"`([^`]+)`", prompt)
+        }
+        expected = {
+            str(meta_harness.LOGS_DIR),
+            str(meta_harness.EVOLUTION_SUMMARY),
+            str(meta_harness.FRONTIER_VAL),
+            str(meta_harness.PENDING_EVAL),
+        }
+        self.assertEqual(listed, expected)
 
 
 class AgentClassValidationTests(unittest.TestCase):
